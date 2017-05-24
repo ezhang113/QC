@@ -71,12 +71,12 @@ def clipseq_metrics_df(analysis_dir,
 
     #rmRep_mapping_files = glob.glob(os.path.join(
     #    analysis_dir, "*.adapterTrim.round2.rep.bamLog.final.out"))
-    rmRep_mapping_files = glob.glob(os.path.join(
-        analysis_dir, "*fqTrTrU-SoMa.metrics"))
-    print("rmRep_mapping_files:", rmRep_mapping_files)
+    #rmRep_mapping_files = glob.glob(os.path.join(
+    #    analysis_dir, "*fqTrTrU-SoMa.metrics"))
+    #print("rmRep_mapping_files:", rmRep_mapping_files)
 
     #rm_duped_files = glob.glob(os.path.join(analysis_dir, "*rmRep.rmDup.metrics"))
-    rm_duped_files = glob.glob(os.path.join(analysis_dir, "*fqTrTrMa.metrics"))
+    rm_duped_files = glob.glob(os.path.join(analysis_dir, "*fqTrTrU-SoMaSoCo.metrics"))
     print("rm_duped_files:", rm_duped_files)
     # hack for new data
     #if len(rm_duped_files) == 0:
@@ -88,13 +88,13 @@ def clipseq_metrics_df(analysis_dir,
     #spot_files = glob.glob(os.path.join(
     #    analysis_dir, "*peaks.metrics"))
     spot_files = glob.glob(os.path.join(
-        analysis_dir,"*fqTrTrU-SoMaCoSoV2Cl.bed.log"))
+        analysis_dir,"*fqTrTrU-SoMaSoCoSoV2Cl.bed.log"))
     print("spot_files:", spot_files)
 
     #peaks_files = glob.glob(os.path.join(
     #    analysis_dir, "*.peaks.bed"))
     peaks_files = glob.glob(os.path.join(
-        analysis_dir, "*fqTrTrU-SoMaCoSoV2Cl.bed"))
+        analysis_dir, "*fqTrTrU-SoMaSoCoSoMeV2Cl.bed"))
     print("peaks_files:", peaks_files)
 
     print("---")
@@ -104,9 +104,9 @@ def clipseq_metrics_df(analysis_dir,
     # get file names
     ################
     cutadapt_round2_names = get_names(cutadapt_round2_files, num_seps, sep)
-    rmRep_mapping_names = get_names(rmRep_mapping_files, num_seps, sep)
+    # rmRep_mapping_names = get_names(rmRep_mapping_files, num_seps, sep)
     rm_duped_names = get_names(rm_duped_files, num_seps, sep)
-    spot_names = get_names(spot_files, num_seps, sep)
+    # spot_names = get_names(spot_files, num_seps, sep)
     peaks_names = get_names(peaks_files, num_seps, sep)
     ###########################################################################
 
@@ -120,12 +120,12 @@ def clipseq_metrics_df(analysis_dir,
     cutadapt_round2_df.columns = ["{} Round 2".format(col)
                                   for col in cutadapt_round2_df.columns]
 
-    rmRep_mapping_df = pd.DataFrame(
-        {name: parse_star_file(star_file)
-         for name, star_file in rmRep_mapping_names.items()}
-    ).transpose()
-    rmRep_mapping_df.columns = ["{} rmRep".format(col)
-                                for col in rmRep_mapping_df.columns]
+    # rmRep_mapping_df = pd.DataFrame(
+    #     {name: parse_star_file(star_file)
+    #      for name, star_file in rmRep_mapping_names.items()}
+    # ).transpose()
+    # rmRep_mapping_df.columns = ["{} rmRep".format(col)
+    #                             for col in rmRep_mapping_df.columns]
 
     rm_duped_df = pd.DataFrame(
         {name: parse_rm_duped_metrics_file(rm_duped_file)
@@ -162,8 +162,8 @@ def clipseq_metrics_df(analysis_dir,
     #                        left_index=True, right_index=True, how="outer")
     combined_df = pd.merge(combined_df, peaks_df,
                            left_index=True, right_index=True, how="outer")
-    combined_df = pd.merge(combined_df, rmRep_mapping_df,
-                           left_index=True, right_index=True, how="outer")
+    # combined_df = pd.merge(combined_df, rmRep_mapping_df,
+    #                        left_index=True, right_index=True, how="outer")
     ###########################################################################
 
 
@@ -198,6 +198,7 @@ def get_names(files, num_seps, sep):
         sep: str seperator to split on
     Returns: dict basename to file
     """
+
     dict_basename_to_file = {sep.join(os.path.basename(file).split(sep)[0: num_seps]): file
                              for file in files}
     return dict_basename_to_file
