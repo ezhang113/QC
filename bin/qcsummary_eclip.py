@@ -29,18 +29,37 @@ import pybedtools
 from parse_cutadapt import parse_cutadapt_file
 from qcsummary_rnaseq import rnaseq_metrics_df, parse_star_file
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-def clipseq_metrics_csv(analysis_dir, output_csv):
-    df = clipseq_metrics_df(analysis_dir=analysis_dir, iclip=True)
+from matplotlib import rc
+rc('text', usetex=False)
+matplotlib.rcParams['svg.fonttype'] = 'none'
+rc('font', **{'family': 'DejaVu Sans'})
+
+def clipseq_metrics_csv(
+        analysis_dir, output_csv, percent_usable, number_usable, peak_threshold
+):
+    # TODO: remove iclip param when new nomenclature is finalized.
+    df = clipseq_metrics_df(
+        analysis_dir=analysis_dir,
+        percent_usable=percent_usable,
+        number_usable=number_usable,
+        iclip=True,
+    )
     df.to_csv(output_csv)
+    # TODO: more elegantly save figure.
+    plot_qc(df, output_csv.replace('.csv','.png'), percent_usable, number_usable, peak_threshold)
 
 
-def clipseq_metrics_df(analysis_dir,
-                       iclip=False,
-                       num_seps=None,
-                       sep=".",
-                       percent_usable=.01,
-                       number_usable=500000):
+def clipseq_metrics_df(
+        analysis_dir, percent_usable,
+        number_usable,
+        iclip=True, num_seps=None,
+        sep="."
+):
     #######################################
     """
     Reports all clip-seq metrics in a given analysis directory
@@ -55,19 +74,19 @@ def clipseq_metrics_df(analysis_dir,
     Returns:
     """
     if num_seps is None:
-        num_seps = 2 if iclip else 1
+        num_seps = 4 if iclip else 1
 
     ###########################################################################
     # get file paths
     ################
-    print("---")
-    print("GET FILE PATHS FOR ECLIP")
+    # print("---")
+    # print("GET FILE PATHS FOR ECLIP")
 
     #cutadapt_round2_files = glob.glob(os.path.join(
     #    analysis_dir, "*.adapterTrim.round2.metrics"))
     cutadapt_round2_files = glob.glob(os.path.join(
         analysis_dir, "*fqTrTr.metrics"))
-    print("cutadapt_round2_files:", cutadapt_round2_files)
+    # print("cutadapt_round2_files:", cutadapt_round2_files)
 
     #rmRep_mapping_files = glob.glob(os.path.join(
     #    analysis_dir, "*.adapterTrim.round2.rep.bamLog.final.out"))
@@ -77,7 +96,7 @@ def clipseq_metrics_df(analysis_dir,
 
     #rm_duped_files = glob.glob(os.path.join(analysis_dir, "*rmRep.rmDup.metrics"))
     rm_duped_files = glob.glob(os.path.join(analysis_dir, "*fqTrTrU-SoMaSoCo.metrics"))
-    print("rm_duped_files:", rm_duped_files)
+    # print("rm_duped_files:", rm_duped_files)
     # hack for new data
     #if len(rm_duped_files) == 0:
         #rm_duped_files = glob.glob(os.path.join(analysis_dir, "*r2.rmDup.metrics"))
@@ -89,15 +108,15 @@ def clipseq_metrics_df(analysis_dir,
     #    analysis_dir, "*peaks.metrics"))
     spot_files = glob.glob(os.path.join(
         analysis_dir,"*fqTrTrU-SoMaSoCoSoV2Cl.bed.log"))
-    print("spot_files:", spot_files)
+    # print("spot_files:", spot_files)
 
     #peaks_files = glob.glob(os.path.join(
     #    analysis_dir, "*.peaks.bed"))
     peaks_files = glob.glob(os.path.join(
         analysis_dir, "*fqTrTrU-SoMaSoCoSoMeV2Cl.bed"))
-    print("peaks_files:", peaks_files)
+    # print("peaks_files:", peaks_files)
 
-    print("---")
+    # print("---")
     ###########################################################################
 
     ###########################################################################
@@ -172,10 +191,13 @@ def clipseq_metrics_df(analysis_dir,
     ######################
     combined_df['Uniquely Mapped Reads'] = \
         combined_df['Uniquely Mapped Reads'].astype(float)
+    # print(combined_df['Uniquely Mapped Reads'])
+    combined_df['Input Reads'] = \
+        combined_df['Input Reads'].astype(float)
     try:
-        combined_df["Percent Usable / Input"] = \
-            (combined_df['Usable Reads'] / combined_df['Uniquely Mapped Reads'])
         combined_df["Percent Usable / Mapped"] = \
+            (combined_df['Usable Reads'] / combined_df['Uniquely Mapped Reads'])
+        combined_df["Percent Usable / Input"] = \
             (combined_df['Usable Reads'] / combined_df['Input Reads'])
         combined_df['Passed QC'] = \
             (combined_df['Usable Reads'] > number_usable) & \
@@ -214,7 +236,11 @@ def parse_peak_metrics(fn):
 def parse_rm_duped_metrics_file(rmDup_file):
     ########################################
     try:
+        # print('rmdup file: ', rmDup_file)
+
         df = pd.read_csv(rmDup_file, sep="\t")
+        # print('num total', sum(df.total_count))
+        # print('num removed', sum(df.removed_count))
         return {
             "total_count": sum(df.total_count),
             "removed_count": sum(df.removed_count),
@@ -228,10 +254,86 @@ def parse_rm_duped_metrics_file(rmDup_file):
         }
 
 
+def build_second_mapped_from_master(df):
+    second_mapped = df[[
+        '% of reads unmapped: too short',
+        '% of reads mapped to too many loci',
+        '% of reads unmapped: too many mismatches',
+        'Uniquely mapped reads %',
+        'Percent Usable / Mapped'
+    ]].fillna('0')
+    for col in second_mapped.columns:
+        try:
+            second_mapped[col] = second_mapped[col].apply(
+                lambda x: float(x.strip('%')) / 100
+            )
+        except AttributeError:
+            second_mapped[col] = second_mapped[col].astype(float)
+    return second_mapped
+
+
+def build_peak_df_from_master(df):
+    peaks = df[[
+        'Num Peaks',
+    ]]
+
+    return peaks
+
+
+def build_raw_number_from_master(df):
+    num = df[[
+        'Usable Reads',
+        'Reads Passing Quality Filter',
+        'Uniquely Mapped Reads',
+        'Repetitive Reads'
+    ]]
+    return num
+
+
+def plot_second_mapping_qc(df, percent_usable, ax):
+    second_mapped = build_second_mapped_from_master(df)
+    second_mapped.plot(kind='bar', ax=ax)
+    ax.set_ylim(0, 1)
+    ax.axhline(percent_usable, linestyle=':', alpha=0.75, label='minimum recommended percent usable threshold')
+    ax.set_title("Percent Mapped/Unmapped/Usable (Usable: (dup removed read num) / (unique mapped reads))")
+    ax.legend()
+
+def plot_peak_qc(df, peak_threshold, ax):
+    peaks = build_peak_df_from_master(df)
+    peaks.plot(kind='bar', ax=ax)
+    ax.axhline(peak_threshold, linestyle=':', alpha=0.75, label='minimum recommended peak threshold')
+    ax.set_title("Peak Numbers (Only for merged files)")
+    ax.legend()
+
+def plot_raw_num_qc(df, number_usable, ax):
+    ax.set_title("Number of Reads Mapped/Unmapped/Usable (Usable: (dup removed read num) / (unique mapped reads))")
+    num = build_raw_number_from_master(df)
+    num.plot(kind='bar', ax=ax)
+    ax.axhline(number_usable, linestyle=':', alpha=0.75, label='minimum recommended number usable threshold')
+    ax.legend()
+
+def plot_qc(df, out_file, percent_usable, number_usable, peak_threshold):
+    num_samples = len(df.index)
+
+    f, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(5 * num_samples, 15), sharex=True)
+    plot_second_mapping_qc(df, percent_usable, ax=ax1)
+    plot_raw_num_qc(df, number_usable, ax=ax2)
+    plot_peak_qc(df, peak_threshold, ax=ax3)
+    plt.savefig(out_file)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Make a summary csv files of all eclip metrics")
     parser.add_argument("--analysis_dir", help="analysis directory", required=False, default="./")
     parser.add_argument("--output_csv", help="output csf filename", required=False, default="./eclipqcsummary.csv")
+    parser.add_argument("--number_usable", help="number of usable peaks", required=False, type=float, default=1000000)
+    parser.add_argument("--percent_usable", help="percent of usable peaks", required=False, type=float, default=0.7)
+    parser.add_argument("--peak_threshold", help="peak threshold", required=False, type=float, default=3000)
     args = parser.parse_args()
     # print("args:", args)
-    clipseq_metrics_csv(args.analysis_dir, args.output_csv)
+    clipseq_metrics_csv(
+        args.analysis_dir,
+        args.output_csv,
+        args.percent_usable,
+        args.number_usable,
+        args.peak_threshold
+    )

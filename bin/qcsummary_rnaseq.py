@@ -45,20 +45,20 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     ###########################################################################
     # get file paths
     ################
-    print("---")
-    print("GET FILE PATHS FOR RNASEQ")
+    # print("---")
+    # print("GET FILE PATHS FOR RNASEQ")
 
     # nrf_files = glob.glob(os.path.join(
     #     analysis_dir, "*.NRF.metrics"))
     nrf_files = glob.glob(os.path.join(
         analysis_dir, "*.NRF.metrics"))
-    print("nrf_files:", nrf_files)
+    # print("nrf_files:", nrf_files)
 
     # cutadapt_files = glob.glob(os.path.join(
     #     analysis_dir, "*.adapterTrim.metrics"))
     cutadapt_files = glob.glob(os.path.join(
         analysis_dir, "*fqTr.metrics"))
-    print("cutadapt_files:", cutadapt_files)
+    # print("cutadapt_files:", cutadapt_files)
 
 
     # rmrep_files = glob.glob(os.path.join(
@@ -66,7 +66,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     # TODO: include repetitive element mapping list here.
     rmrep_files = glob.glob(os.path.join(
         analysis_dir, "*REPELEMENTMAPPING.metrics"))
-    print("rmrep_files:", rmrep_files)
+    # print("rmrep_files:", rmrep_files)
 
     # TODO: RNA-SEQ pipelines dont' cut twice, so provide a better name than "TrTr"
     # star_files_1 = glob.glob(os.path.join(
@@ -78,7 +78,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     # TODO: RNA-SEQ pipelines dont' cut twice, so provide a better name than "TrTr"
     star_files_2 = glob.glob(os.path.join(
         analysis_dir, "*fqTr*U-SoMa.metrics"))
-    print("star_files_2:", star_files_2)
+    # print("star_files_2:", star_files_2)
 
     # hack for old data
     # if len(star_files_2) == 0:
@@ -88,7 +88,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     # if len(star_files_2) == 0:
     #     star_files_2 = glob.glob(os.path.join(
     #         analysis_dir, "*.bamLog.final.out"))
-    print("---")
+    # print("---")
     ###########################################################################
 
     ###########################################################################
