@@ -164,10 +164,11 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
 
 
     # FIXME TEMPORARILY COMMENTED OUT
+
     combined_df["Repetitive Reads"] = (
         combined_df['Input Reads']
         - combined_df['Reads Passing Quality Filter']
-    ).astype(int)
+    ).astype(float)
 
 
     #Get Rid of worthless metrics
