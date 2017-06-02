@@ -45,42 +45,50 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     ###########################################################################
     # get file paths
     ################
-    print("---")
-    print("GET FILE PATHS FOR RNASEQ")
+    # print("---")
+    # print("GET FILE PATHS FOR RNASEQ")
 
     # nrf_files = glob.glob(os.path.join(
     #     analysis_dir, "*.NRF.metrics"))
     nrf_files = glob.glob(os.path.join(
         analysis_dir, "*.NRF.metrics"))
-    print("nrf_files:", nrf_files)
+    # print("nrf_files:", nrf_files)
 
     # cutadapt_files = glob.glob(os.path.join(
     #     analysis_dir, "*.adapterTrim.metrics"))
     cutadapt_files = glob.glob(os.path.join(
         analysis_dir, "*fqTr.metrics"))
-    print("cutadapt_files:", cutadapt_files)
+    # print("cutadapt_files:", cutadapt_files)
 
 
     # rmrep_files = glob.glob(os.path.join(
     #     analysis_dir, "*rmRep.metrics"))
+    # TODO: include repetitive element mapping list here.
     rmrep_files = glob.glob(os.path.join(
-        analysis_dir, "*fqTrMa.metrics"))
-    print("rmrep_files:", rmrep_files)
+        analysis_dir, "*REPELEMENTMAPPING.metrics"))
+    # print("rmrep_files:", rmrep_files)
 
-    # star_files = glob.glob(os.path.join(
+    # TODO: RNA-SEQ pipelines dont' cut twice, so provide a better name than "TrTr"
+    # star_files_1 = glob.glob(os.path.join(
+    #     analysis_dir, "*fqTr*Ma.metrics"))
+    # print("star_files_1:", star_files_1)
+
+    # star_files_2 = glob.glob(os.path.join(
     #     analysis_dir, "*rmRep.bamLog.final.out"))
-    star_files = glob.glob(os.path.join(
-        analysis_dir, "*fqTrTrU-SoMa.metrics"))
-    print("star_files:", star_files)
+    # TODO: RNA-SEQ pipelines dont' cut twice, so provide a better name than "TrTr"
+    star_files_2 = glob.glob(os.path.join(
+        analysis_dir, "*fqTr*U-SoMa.metrics"))
+    # print("star_files_2:", star_files_2)
+
     # hack for old data
-    # if len(star_files) == 0:
-    #     star_files = glob.glob(os.path.join(
+    # if len(star_files_2) == 0:
+    #     star_files_2 = glob.glob(os.path.join(
     #         analysis_dir, "*rmRep.samLog.final.out"))
     # hack for new data
-    # if len(star_files) == 0:
-    #     star_files = glob.glob(os.path.join(
+    # if len(star_files_2) == 0:
+    #     star_files_2 = glob.glob(os.path.join(
     #         analysis_dir, "*.bamLog.final.out"))
-    print("---")
+    # print("---")
     ###########################################################################
 
     ###########################################################################
@@ -89,7 +97,8 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     nrf_names = get_names(nrf_files, num_seps, sep)
     cutadapt_names = get_names(cutadapt_files, num_seps, sep)
     rmrep_names = get_names(rmrep_files, num_seps, sep)
-    star_names = get_names(star_files, num_seps, sep)
+    # star_names_1 = get_names(star_files_1, num_seps, sep)
+    star_names_2 = get_names(star_files_2, num_seps, sep)
     ###########################################################################
 
     ###########################################################################
@@ -104,23 +113,28 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     rmrep_df = pd.DataFrame(
         {name: parse_rmrep_file(rmrep_file)
          for name, rmrep_file in rmrep_names.items()}).transpose()
-    star_df = pd.DataFrame(
+
+    # TODO: add in first STAR mapping values (maybe just some of them are useful)
+    # star_df_1 = pd.DataFrame(
+    #     {name: parse_star_file(star_file)
+    #      for name, star_file in star_names_1.items()}).transpose()
+
+    star_df_2 = pd.DataFrame(
         {name: parse_star_file(star_file)
-         for name, star_file in star_names.items()}).transpose()
+         for name, star_file in star_names_2.items()}).transpose()
     ###########################################################################
 
     ###########################################################################
     # merge dataframes
     ##################
-
-
-    combined_df = pd.merge(cutadapt_df, star_df,
+    # combined_df = pd.merge(cutadapt_df, star_df_1,
+    #                        left_index=True, right_index=True, how="outer")
+    combined_df = pd.merge(cutadapt_df, star_df_2,
                            left_index=True, right_index=True, how="outer")
     combined_df = pd.merge(combined_df, rmrep_df,
                            left_index=True, right_index=True, how="outer")
     combined_df = pd.merge(combined_df, nrf_df,
                            left_index=True, right_index=True, how="outer")
-
 
     ###########################################################################
     # compute additional merics
@@ -139,7 +153,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     ######################
     # FIXME TEMPORARILY COMMENTED OUT
     try:
-        combined_df["Percent Repetative"] = \
+        combined_df["Percent Repetitive"] = \
             1 - (combined_df['Reads Passing Quality Filter']
                  / combined_df['Input Reads'].astype(float))
     except ZeroDivisionError:
@@ -150,7 +164,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
 
 
     # FIXME TEMPORARILY COMMENTED OUT
-    combined_df["Repetative Reads"] = (
+    combined_df["Repetitive Reads"] = (
         combined_df['Input Reads']
         - combined_df['Reads Passing Quality Filter']
     ).astype(int)

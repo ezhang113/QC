@@ -4,50 +4,48 @@ cwlVersion: v1.0
 class: CommandLineTool
 
 
-baseCommand: [qcsummary_eclip.py]
+baseCommand: [python, qcsummary_eclip.py]
 
 
 arguments: [
-  --bw_pos,
-  $(inputs.bam.nameroot).posbw,
-  --bw_neg,
-  $(inputs.bam.nameroot).negbw
+  --output_csv,
+  $(inputs.analysis_dir.)/eclipsummary.csv
   ]
 
 inputs:
 
-  bam:
-     type: File
-     format: http://edamontology.org/format_2572
+  analysis_dir:
+     type: Directory
      inputBinding:
        position: 1
-       prefix: --bam
-     #secondaryFiles:
-     #  - ".bai"
+       prefix: --analysis_dir
 
-  bai:
-    type: File
-    format: http://edamontology.org/format_3327
+  number_usable:
+    type: int
     inputBinding:
       position: 2
-      prefix: --bai
+      prefix: --number_usable
 
-  chromsizes:
-    type: File
+  percent_usable:
+    type: float
     inputBinding:
       position: 3
-      prefix: --genome
+      prefix: --percent_usable
+
+  peak_threshold:
+    type: int
+    inputBinding:
+      position: 4
+      prefix: --peak_threshold
 
 outputs:
 
-  posbw:
+  summary_csv:
     type: File
-    format: http://edamontology.org/format_3006
     outputBinding:
-      glob: $(inputs.bam.nameroot).posbw
+      glob: $(inputs.analysis_dir)/eclipsummary.csv
 
-  negbw:
+  summary_figure:
     type: File
-    format: http://edamontology.org/format_3006
     outputBinding:
-      glob: $(inputs.bam.nameroot).negbw
+      glob: $(inputs.analysis_dir)/eclipsummary.png
