@@ -54,12 +54,50 @@ def clipseq_metrics_csv(
     plot_qc(df, output_csv.replace('.csv','.png'), percent_usable, number_usable, peak_threshold)
 
 
+def get_all_names(
+        analysis_dir,
+        cutadapt_round2_suffix,
+        rm_dup_suffix,
+        peak_suffix,
+        sep,
+        num_seps
+):
+    ###########################################################################
+    # get file paths
+    ################
+
+    # cutadapt_round2_files = glob.glob(os.path.join(analysis_dir, "*.adapterTrim.round2.metrics"))
+    cutadapt_round2_files = glob.glob(os.path.join(analysis_dir, cutadapt_round2_suffix))
+
+    # rm_duped_files = glob.glob(os.path.join(analysis_dir, "*rmRep.rmDup.metrics"))
+    rm_duped_files = glob.glob(os.path.join(analysis_dir, rm_dup_suffix))
+
+    # peaks_files = glob.glob(os.path.join(analysis_dir, "*.peaks.bed"))
+    peaks_files = glob.glob(os.path.join(analysis_dir, peak_suffix))
+
+    ###########################################################################
+
+    ###########################################################################
+    # get file names
+    ################
+    cutadapt_round2_names = get_names(cutadapt_round2_files, num_seps, sep)
+    # rmRep_mapping_names = get_names(rmRep_mapping_files, num_seps, sep)
+    rm_duped_names = get_names(rm_duped_files, num_seps, sep)
+    # spot_names = get_names(spot_files, num_seps, sep)
+    peaks_names = get_names(peaks_files, num_seps, sep)
+    ###########################################################################
+    return cutadapt_round2_names, rm_duped_names, peaks_names
+
 def clipseq_metrics_df(
         analysis_dir, percent_usable,
         number_usable,
         iclip=True, num_seps=None,
-        sep="."
+        sep=".",
+        cutadapt_round2_suffix="*fqTrTr.metrics",
+        rm_dup_suffix="*fqTrTrU-SoMaSoCo.metrics",
+        peak_suffix="*fqTrTrU-SoMaSoCoSoMeV2Cl.bed"
 ):
+
     #######################################
     """
     Reports all clip-seq metrics in a given analysis directory
@@ -73,89 +111,36 @@ def clipseq_metrics_df(
         number_usable:
     Returns:
     """
+    # TODO: fix prefix name separator
     if num_seps is None:
-        num_seps = 4 if iclip else 1
+        num_seps = 3 if iclip else 1
 
-    ###########################################################################
-    # get file paths
-    ################
-    # print("---")
-    # print("GET FILE PATHS FOR ECLIP")
-
-    #cutadapt_round2_files = glob.glob(os.path.join(
-    #    analysis_dir, "*.adapterTrim.round2.metrics"))
-    cutadapt_round2_files = glob.glob(os.path.join(
-        analysis_dir, "*fqTrTr.metrics"))
-    # print("cutadapt_round2_files:", cutadapt_round2_files)
-
-    #rmRep_mapping_files = glob.glob(os.path.join(
-    #    analysis_dir, "*.adapterTrim.round2.rep.bamLog.final.out"))
-    #rmRep_mapping_files = glob.glob(os.path.join(
-    #    analysis_dir, "*fqTrTrU-SoMa.metrics"))
-    #print("rmRep_mapping_files:", rmRep_mapping_files)
-
-    #rm_duped_files = glob.glob(os.path.join(analysis_dir, "*rmRep.rmDup.metrics"))
-    rm_duped_files = glob.glob(os.path.join(analysis_dir, "*fqTrTrU-SoMaSoCo.metrics"))
-    # print("rm_duped_files:", rm_duped_files)
-    # hack for new data
-    #if len(rm_duped_files) == 0:
-        #rm_duped_files = glob.glob(os.path.join(analysis_dir, "*r2.rmDup.metrics"))
-    # hack for new data
-    #if len(rm_duped_files) == 0:
-        #rm_duped_files = glob.glob(os.path.join(analysis_dir, "*.rmDup.metrics"))
-
-    #spot_files = glob.glob(os.path.join(
-    #    analysis_dir, "*peaks.metrics"))
-    spot_files = glob.glob(os.path.join(
-        analysis_dir,"*fqTrTrU-SoMaSoCoSoV2Cl.bed.log"))
-    # print("spot_files:", spot_files)
-
-    #peaks_files = glob.glob(os.path.join(
-    #    analysis_dir, "*.peaks.bed"))
-    peaks_files = glob.glob(os.path.join(
-        analysis_dir, "*fqTrTrU-SoMaSoCoSoMeV2Cl.bed"))
-    # print("peaks_files:", peaks_files)
-
-    # print("---")
-    ###########################################################################
-
-    ###########################################################################
-    # get file names
-    ################
-    cutadapt_round2_names = get_names(cutadapt_round2_files, num_seps, sep)
-    # rmRep_mapping_names = get_names(rmRep_mapping_files, num_seps, sep)
-    rm_duped_names = get_names(rm_duped_files, num_seps, sep)
-    # spot_names = get_names(spot_files, num_seps, sep)
-    peaks_names = get_names(peaks_files, num_seps, sep)
-    ###########################################################################
+    cutadapt_round2_names, rm_duped_names, peaks_names = get_all_names(
+        analysis_dir,
+        cutadapt_round2_suffix,
+        rm_dup_suffix,
+        peak_suffix,
+        sep,
+        num_seps
+    )
 
     ###########################################################################
     # make dataframes
     #################
     cutadapt_round2_df = pd.DataFrame(
-        {name: parse_cutadapt_file(cutadapt_file)
-         for name, cutadapt_file in cutadapt_round2_names.items()}
+        {
+            name: parse_cutadapt_file(cutadapt_file)
+            for name, cutadapt_file in cutadapt_round2_names.items()
+        }
     ).transpose()
-    cutadapt_round2_df.columns = ["{} Round 2".format(col)
-                                  for col in cutadapt_round2_df.columns]
-
-    # rmRep_mapping_df = pd.DataFrame(
-    #     {name: parse_star_file(star_file)
-    #      for name, star_file in rmRep_mapping_names.items()}
-    # ).transpose()
-    # rmRep_mapping_df.columns = ["{} rmRep".format(col)
-    #                             for col in rmRep_mapping_df.columns]
+    cutadapt_round2_df.columns = [
+        "{} Round 2".format(col) for col in cutadapt_round2_df.columns
+    ]
 
     rm_duped_df = pd.DataFrame(
         {name: parse_rm_duped_metrics_file(rm_duped_file)
          for name, rm_duped_file in rm_duped_names.items()}
     ).transpose()
-
-    # FIXME TEMPORARILY COMMENTED OUT
-    # spot_df = pd.DataFrame(
-    #     {name: parse_peak_metrics(spot_file)
-    #      for name, spot_file in spot_names.items()}
-    # ).transpose()
 
     peaks_df = pd.DataFrame(
         {name: {"Num Peaks": len(pybedtools.BedTool(peaks_file))}
@@ -176,75 +161,91 @@ def clipseq_metrics_df(
                            left_index=True, right_index=True, how="outer")
     combined_df = pd.merge(combined_df, rm_duped_df,
                            left_index=True, right_index=True, how="outer")
-    # FIXME TEMPORARILY COMMENTED OUT
-    # combined_df = pd.merge(combined_df, spot_df,
-    #                        left_index=True, right_index=True, how="outer")
     combined_df = pd.merge(combined_df, peaks_df,
                            left_index=True, right_index=True, how="outer")
-    # combined_df = pd.merge(combined_df, rmRep_mapping_df,
-    #                        left_index=True, right_index=True, how="outer")
-    ###########################################################################
-
 
     ###########################################################################
+
     # compute useful stats
     ######################
-    combined_df['Uniquely Mapped Reads'] = \
-        combined_df['Uniquely Mapped Reads'].astype(float)
+    combined_df['Uniquely Mapped Reads'] = combined_df['Uniquely Mapped Reads'].astype(float)
     # print(combined_df['Uniquely Mapped Reads'])
-    combined_df['Input Reads'] = \
-        combined_df['Input Reads'].astype(float)
+    combined_df['Input Reads'] = combined_df['Input Reads'].astype(float)
     try:
         combined_df["Percent Usable / Mapped"] = \
             (combined_df['Usable Reads'] / combined_df['Uniquely Mapped Reads'])
+
         combined_df["Percent Usable / Input"] = \
             (combined_df['Usable Reads'] / combined_df['Input Reads'])
+
         combined_df['Passed QC'] = \
             (combined_df['Usable Reads'] > number_usable) & \
             (combined_df['Percent Usable / Mapped'] > percent_usable)
+
     except ZeroDivisionError:
         print("passing on ZeroDivisionError")
         pass
-    ###########################################################################
 
     return combined_df
 
 
 def get_names(files, num_seps, sep):
-    ################################
     """
-    Given a list of files return that files base name and the path to that file
-    Args:
-        files: list of files
-        num_seps: int number of seperators in to call the real name
-        sep: str seperator to split on
-    Returns: dict basename to file
+    Given a list of files,
+     return that files base name and the path to that file
+     
+    :param files: list
+        list of files
+    :param num_seps: int
+        number of separators to call real names
+    :param sep: str
+        separator to split names on
+    :return basenames: dict
+        dict basename to file
     """
 
-    dict_basename_to_file = {sep.join(os.path.basename(file).split(sep)[0: num_seps]): file
-                             for file in files}
+    dict_basename_to_file = {
+        sep.join(os.path.basename(file).split(sep)[0: num_seps]): file
+        for file in files
+    }
+
     return dict_basename_to_file
 
 
 def parse_peak_metrics(fn):
-    #######################
+    """
+    Unused function that has parsed/will parse CLIPPER metrics.
+    
+    :param fn: basestring
+    :return spot_dict: dict 
+    """
     with open(fn) as file_handle:
         file_handle.next()
         return {'spot': float(file_handle.next())}
 
 
 def parse_rm_duped_metrics_file(rmDup_file):
+    """
+    Parses the rmdup file (tabbed file containing
+     barcodes found ('randomer'), 
+     number of reads found ('total_count'),
+     number of reads removed ('removed_count')
+     
+    :param rmDup_file: basestring
+        filename of the rmDup file
+    :return count_dict: dict
+        dictionary containing sums of total, removed, 
+        and usable (total - removed)
+    """
     ########################################
     try:
-        # print('rmdup file: ', rmDup_file)
 
         df = pd.read_csv(rmDup_file, sep="\t")
-        # print('num total', sum(df.total_count))
-        # print('num removed', sum(df.removed_count))
         return {
             "total_count": sum(df.total_count),
             "removed_count": sum(df.removed_count),
-            "Usable Reads": sum(df.total_count) - sum(df.removed_count)}
+            "Usable Reads": sum(df.total_count) - sum(df.removed_count)
+        }
     except Exception as e:
         print(e)
         return {
