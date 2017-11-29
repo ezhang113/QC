@@ -167,8 +167,15 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
 
     combined_df["Repetitive Reads"] = (
         combined_df['Input Reads']
-        - combined_df['Reads Passing Quality Filter']
+        - combined_df['Reads Passing Quality Filter']       
+    # FIXME: getting error with astype(int), (possibly related no relying on default parameter values?):
+    ########################################    
+    # File "/projects/ps-yeolab/software/qcsummary/qcsummary-0.0.3/bin/qcsummary_rnaseq.py", line 188, in rnaseq_metrics_df
+    # ).astype(int)
+    # ValueError: cannot convert float NaN to integer
+
     ).astype(float)
+
 
 
     #Get Rid of worthless metrics
