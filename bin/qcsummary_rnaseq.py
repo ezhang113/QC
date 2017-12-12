@@ -122,6 +122,11 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     star_df_2 = pd.DataFrame(
         {name: parse_star_file(star_file)
          for name, star_file in star_names_2.items()}).transpose()
+
+    cutadapt_df.columns = [
+        "{} Round 1".format(col) for col in cutadapt_df.columns
+        ]
+
     ###########################################################################
 
     ###########################################################################
@@ -141,8 +146,8 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     ###########################
     #Rename columns to be useful
     combined_df = combined_df.rename(
-        columns={"Processed bases": "Input Bases",
-                 "Processed reads": "Input Reads",
+        columns={"Processed bases Round 1": "Input Bases Round 1",
+                 "Processed reads Round 1": "Input Reads Round 1",
                  "Number of input reads": "Reads Passing Quality Filter",
                   "Uniquely mapped reads number": "Uniquely Mapped Reads",
            })
@@ -155,7 +160,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
     try:
         combined_df["Percent Repetitive"] = \
             1 - (combined_df['Reads Passing Quality Filter']
-                 / combined_df['Input Reads'].astype(float))
+                 / combined_df['Reads Written Round 1'].astype(float))
     except ZeroDivisionError:
         pass
     except KeyError:
@@ -164,9 +169,8 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep="."):
 
 
     # FIXME TEMPORARILY COMMENTED OUT
-
     combined_df["Repetitive Reads"] = (
-        combined_df['Input Reads']
+        combined_df['Reads Written Round 1']
         - combined_df['Reads Passing Quality Filter']       
     # FIXME: getting error with astype(int), (possibly related no relying on default parameter values?):
     ########################################    
