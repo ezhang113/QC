@@ -39,6 +39,84 @@ rc('text', usetex=False)
 matplotlib.rcParams['svg.fonttype'] = 'none'
 rc('font', **{'family': 'DejaVu Sans'})
 
+
+out_file_order = """Input Bases Round 1
+Input Reads Round 1
+Read 1 Total written (filtered) Round 1
+Read 1 Trimmed bases Round 1
+Read 1 basepairs processed Round 1
+Read 1 with adapter Round 1
+Read 1 with adapter percent Round 1
+Read 2 Total written (filtered) Round 1
+Read 2 Trimmed bases Round 1
+Read 2 basepairs processed Round 1
+Read 2 with adapter Round 1
+Read 2 with adapter percent Round 1
+Reads Written Round 1
+Reads Written perccent Round 1
+Reads that were too short percent Round 1
+Too short reads Round 1
+Total written (filtered) Round 1
+Total written (filtered) percent Round 1
+Trimmed bases Round 1
+Trimmed bases percent Round 1
+Processed bases Round 2
+Processed reads Round 2
+Read 1 Total written (filtered) Round 2
+Read 1 Trimmed bases Round 2
+Read 1 basepairs processed Round 2
+Read 1 with adapter Round 2
+Read 1 with adapter percent Round 2
+Read 2 Total written (filtered) Round 2
+Read 2 Trimmed bases Round 2
+Read 2 basepairs processed Round 2
+Read 2 with adapter Round 2
+Read 2 with adapter percent Round 2
+Reads Written Round 2
+Reads Written perccent Round 2
+Reads that were too short percent Round 2
+Too short reads Round 2
+Total written (filtered) Round 2
+Total written (filtered) percent Round 2
+Trimmed bases Round 2
+Trimmed bases percent Round 2
+Percent Repetitive
+Repetitive Reads
+Reads Passing Quality Filter
+% of reads mapped to multiple loci
+% of reads mapped to too many loci
+% of reads unmapped: other
+% of reads unmapped: too many mismatches
+% of reads unmapped: too short
+Average input read length
+Average mapped length
+Deletion average length
+Deletion rate per base
+Insertion average length
+Insertion rate per base
+Mismatch rate per base, percent
+Number of reads mapped to multiple loci
+Number of reads mapped to too many loci
+Number of splices: AT/AC
+Number of splices: Annotated (sjdb)
+Number of splices: GC/AG
+Number of splices: GT/AG
+Number of splices: Non-canonical
+Number of splices: Total
+Uniquely mapped reads %
+Uniquely Mapped Reads
+Usable Reads
+removed_count
+total_count
+Num Peaks
+Percent Usable / Mapped
+Percent Usable / Input
+Passed QC""".split("\n")
+
+slim_qc_metrics = [ "Input Reads Round 1", "Reads Written Round 2", "Repetitive Reads", "Reads Passing Quality Filter",
+                                          "Uniquely Mapped Reads", "Uniquely mapped reads %", 'Number of reads mapped to too many loci',
+                                          '% of reads unmapped: too short', '% of reads mapped to too many loci', "Usable Reads",
+                                          "Percent Usable / Mapped", "Percent Usable / Input", "Num Peaks",]
 def clipseq_metrics_csv(
         analysis_dir, output_csv, percent_usable, number_usable, peak_threshold
 ):
@@ -49,7 +127,10 @@ def clipseq_metrics_csv(
         number_usable=number_usable,
         iclip=True,
     )
+    
+    df = df[out_file_order]
     df.to_csv(output_csv)
+    df[slim_qc_metrics].to_csv(os.path.splitext(output_csv)[0] + ".annotated.csv")
     # TODO: more elegantly save figure.
     plot_qc(df, output_csv.replace('.csv','.png'), percent_usable, number_usable, peak_threshold)
 
@@ -94,8 +175,8 @@ def clipseq_metrics_df(
         iclip=True, num_seps=None,
         sep=".",
         cutadapt_round2_suffix="*fqTrTr.metrics",
-        rm_dup_suffix="*fqTrTrU-SoMaSoCo.metrics",
-        peak_suffix="*fqTrTrU-SoMaSoCoSoMeV2Cl.bed"
+        rm_dup_suffix="*fqTrTrU-SoMaSoCp.metrics",
+        peak_suffix="*fqTrTrU-SoMaSoCpSoMeV2Cl.bed"
 ):
 
     #######################################
@@ -123,7 +204,7 @@ def clipseq_metrics_df(
         sep,
         num_seps
     )
-
+    
     ###########################################################################
     # make dataframes
     #################
@@ -170,17 +251,25 @@ def clipseq_metrics_df(
     ######################
     combined_df['Uniquely Mapped Reads'] = combined_df['Uniquely Mapped Reads'].astype(float)
     # print(combined_df['Uniquely Mapped Reads'])
-    combined_df['Input Reads'] = combined_df['Input Reads'].astype(float)
+    combined_df['Input Reads Round 1'] = combined_df['Input Reads Round 1'].astype(float)
     try:
         combined_df["Percent Usable / Mapped"] = \
             (combined_df['Usable Reads'] / combined_df['Uniquely Mapped Reads'])
 
         combined_df["Percent Usable / Input"] = \
-            (combined_df['Usable Reads'] / combined_df['Input Reads'])
+            (combined_df['Usable Reads'] / combined_df['Input Reads Round 1'])
+
+        combined_df["Percent Repetitive"] = \
+            1 - (combined_df['Reads Passing Quality Filter'] / \
+                     combined_df['Reads Written Round 2'].astype(float))
+
+        combined_df["Repetitive Reads"] = combined_df['Reads Written Round 2'] - combined_df['Reads Passing Quality Filter']
 
         combined_df['Passed QC'] = \
             (combined_df['Usable Reads'] > number_usable) & \
             (combined_df['Percent Usable / Mapped'] > percent_usable)
+
+
 
     except ZeroDivisionError:
         print("passing on ZeroDivisionError")
@@ -331,6 +420,7 @@ if __name__ == '__main__':
     parser.add_argument("--peak_threshold", help="peak threshold", required=False, type=float, default=3000)
     args = parser.parse_args()
     # print("args:", args)
+    
     clipseq_metrics_csv(
         args.analysis_dir,
         args.output_csv,
