@@ -133,7 +133,7 @@ def parse_new_cutadapt_file(report):
     report_dict['Too short reads'] = too_short[1]
     report_dict['Reads that were too short percent'] = too_short[2]
     report_dict['Reads Written'] = written[1]
-    report_dict['Reads Written perccent'] = written[2]
+    report_dict['Reads Written percent'] = written[2]
     report_dict['Processed bases'] = bp_processed[1]
     report_dict['Trimmed bases'] = bp_quality_trimmed[1]
     report_dict['Trimmed bases percent'] = bp_quality_trimmed[2]
@@ -147,6 +147,13 @@ def parse_new_cutadapt_file(report):
 ## parse_new_cutadapt_file utilities
 ######################################
 def get_number_and_percent(line):
+    """
+    Parses cutadapt line containing a number (string) and returns
+    number typecasted to int, as well as a percentage (float), as a list.
+
+    :param line: basestring
+    :return line: list
+    """
     line = [x.strip() for x in line.strip().split(":")]
     line = [line[0]] + line[1].split()
     line[2] = float(line[2][1:-2])
@@ -155,6 +162,13 @@ def get_number_and_percent(line):
 
 
 def get_number(line):
+    """
+    Parses cutadapt line containing a number (string) and returns
+    number typecasted to int.
+
+    :param line: basestring
+    :return number: int
+    """
     line = [x.strip() for x in line.strip().split(":")]
     line[1] = int(line[1].replace(",", ""))
     return line
@@ -166,6 +180,7 @@ def strip_bp(line):
 
 def remove_header(file_handle):
     """ for both SE and PE output removes header unifromly from cutadapt metrics file"""
+    file_handle.next()
     file_handle.next()
     file_handle.next()
     file_handle.next()

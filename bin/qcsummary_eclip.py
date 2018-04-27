@@ -40,8 +40,8 @@ matplotlib.rcParams['svg.fonttype'] = 'none'
 rc('font', **{'family': 'DejaVu Sans'})
 
 
-out_file_order = """Input Bases Round 1
-Input Reads Round 1
+out_file_order = """Initial bases num
+Initial reads num
 Read 1 Total written (filtered) Round 1
 Read 1 Trimmed bases Round 1
 Read 1 basepairs processed Round 1
@@ -52,8 +52,8 @@ Read 2 Trimmed bases Round 1
 Read 2 basepairs processed Round 1
 Read 2 with adapter Round 1
 Read 2 with adapter percent Round 1
-Reads Written Round 1
-Reads Written perccent Round 1
+Reads after cutadapt 1
+Reads Written percent Round 1
 Reads that were too short percent Round 1
 Too short reads Round 1
 Total written (filtered) Round 1
@@ -72,8 +72,8 @@ Read 2 Trimmed bases Round 2
 Read 2 basepairs processed Round 2
 Read 2 with adapter Round 2
 Read 2 with adapter percent Round 2
-Reads Written Round 2
-Reads Written perccent Round 2
+Reads after cutadapt 2
+Reads Written percent Round 2
 Reads that were too short percent Round 2
 Too short reads Round 2
 Total written (filtered) Round 2
@@ -82,7 +82,7 @@ Trimmed bases Round 2
 Trimmed bases percent Round 2
 Percent Repetitive
 Repetitive Reads
-Reads Passing Quality Filter
+STAR genome input reads
 % of reads mapped to multiple loci
 % of reads mapped to too many loci
 % of reads unmapped: other
@@ -103,20 +103,20 @@ Number of splices: GC/AG
 Number of splices: GT/AG
 Number of splices: Non-canonical
 Number of splices: Total
-Uniquely mapped reads %
-Uniquely Mapped Reads
-Usable Reads
+STAR genome uniquely mapped %
+STAR genome uniquely mapped
+Usable reads
 removed_count
 total_count
-Num Peaks
-Percent Usable / Mapped
+Clipper peaks num
+Percent usable / mapped
 Percent Usable / Input
-Passed QC""".split("\n")
+Passed basic QC""".split("\n")
 
-slim_qc_metrics = [ "Input Reads Round 1", "Reads Written Round 2", "Repetitive Reads", "Reads Passing Quality Filter",
-                                          "Uniquely Mapped Reads", "Uniquely mapped reads %", 'Number of reads mapped to too many loci',
-                                          '% of reads unmapped: too short', '% of reads mapped to too many loci', "Usable Reads",
-                                          "Percent Usable / Mapped", "Percent Usable / Input", "Num Peaks",]
+slim_qc_metrics = [ "Initial reads num", "Reads after cutadapt 2", "Repetitive Reads", "STAR genome input reads",
+                                          "STAR genome uniquely mapped", "STAR genome uniquely mapped %", 'Number of reads mapped to too many loci',
+                                          '% of reads unmapped: too short', '% of reads mapped to too many loci', "Usable reads",
+                                          "Percent usable / mapped", "Percent Usable / Input", "Clipper peaks num",]
 def clipseq_metrics_csv(
         analysis_dir, output_csv, percent_usable, number_usable, peak_threshold
 ):
@@ -125,7 +125,7 @@ def clipseq_metrics_csv(
         analysis_dir=analysis_dir,
         percent_usable=percent_usable,
         number_usable=number_usable,
-        iclip=True,
+        iclip=False,
     )
     
     df = df[out_file_order]
@@ -149,7 +149,7 @@ def get_all_names(
 
     # cutadapt_round2_files = glob.glob(os.path.join(analysis_dir, "*.adapterTrim.round2.metrics"))
     cutadapt_round2_files = glob.glob(os.path.join(analysis_dir, cutadapt_round2_suffix))
-
+    # print("cutadapt_round2_files: {}".format(cutadapt_round2_files))
     # rm_duped_files = glob.glob(os.path.join(analysis_dir, "*rmRep.rmDup.metrics"))
     rm_duped_files = glob.glob(os.path.join(analysis_dir, rm_dup_suffix))
 
@@ -172,11 +172,11 @@ def get_all_names(
 def clipseq_metrics_df(
         analysis_dir, percent_usable,
         number_usable,
-        iclip=True, num_seps=None,
+        iclip=False, num_seps=None,
         sep=".",
         cutadapt_round2_suffix="*fqTrTr.metrics",
-        rm_dup_suffix="*fqTrTrU-SoMaSoCp.metrics",
-        peak_suffix="*fqTrTrU-SoMaSoCpSoMeV2Cl.bed"
+        rm_dup_suffix="*.outSo.rmDup.metrics",
+        peak_suffix="*.peakClusters.bed"
 ):
 
     #######################################
@@ -194,7 +194,7 @@ def clipseq_metrics_df(
     """
     # TODO: fix prefix name separator
     if num_seps is None:
-        num_seps = 3 if iclip else 1
+        num_seps = 3 if iclip else 3
 
     cutadapt_round2_names, rm_duped_names, peaks_names = get_all_names(
         analysis_dir,
@@ -224,7 +224,7 @@ def clipseq_metrics_df(
     ).transpose()
 
     peaks_df = pd.DataFrame(
-        {name: {"Num Peaks": len(pybedtools.BedTool(peaks_file))}
+        {name: {"Clipper peaks num": len(pybedtools.BedTool(peaks_file))}
          for name, peaks_file in peaks_names.items()}
     ).transpose()
     ###########################################################################
@@ -246,30 +246,23 @@ def clipseq_metrics_df(
                            left_index=True, right_index=True, how="outer")
 
     ###########################################################################
+    # Rename columns to be useful
+    combined_df = combined_df.rename(
+        columns={"Reads Written Round 2": "Reads after cutadapt 2"
+                 })
+
+    ###########################################################################
 
     # compute useful stats
     ######################
-    combined_df['Uniquely Mapped Reads'] = combined_df['Uniquely Mapped Reads'].astype(float)
-    # print(combined_df['Uniquely Mapped Reads'])
-    combined_df['Input Reads Round 1'] = combined_df['Input Reads Round 1'].astype(float)
+    combined_df['STAR genome uniquely mapped'] = combined_df['STAR genome uniquely mapped'].astype(float)
+    combined_df['Initial reads num'] = combined_df['Initial reads num'].astype(float)
     try:
-        combined_df["Percent Usable / Mapped"] = \
-            (combined_df['Usable Reads'] / combined_df['Uniquely Mapped Reads'])
-
-        combined_df["Percent Usable / Input"] = \
-            (combined_df['Usable Reads'] / combined_df['Input Reads Round 1'])
-
-        combined_df["Percent Repetitive"] = \
-            1 - (combined_df['Reads Passing Quality Filter'] / \
-                     combined_df['Reads Written Round 2'].astype(float))
-
-        combined_df["Repetitive Reads"] = combined_df['Reads Written Round 2'] - combined_df['Reads Passing Quality Filter']
-
-        combined_df['Passed QC'] = \
-            (combined_df['Usable Reads'] > number_usable) & \
-            (combined_df['Percent Usable / Mapped'] > percent_usable)
-
-
+        combined_df["Percent usable / mapped"] = (combined_df['Usable reads'] / combined_df['STAR genome uniquely mapped'])
+        combined_df["Percent Usable / Input"] = (combined_df['Usable reads'] / combined_df['Initial reads num'])
+        combined_df["Percent Repetitive"] = 1 - (combined_df['STAR genome input reads'] / combined_df['Reads after cutadapt 2'].astype(float))
+        combined_df["Repetitive Reads"] = combined_df['Reads after cutadapt 2'] - combined_df['STAR genome input reads']
+        combined_df['Passed basic QC'] = (combined_df['Usable reads'] > number_usable) & (combined_df['Percent usable / mapped'] > percent_usable)
 
     except ZeroDivisionError:
         print("passing on ZeroDivisionError")
@@ -297,7 +290,7 @@ def get_names(files, num_seps, sep):
         sep.join(os.path.basename(file).split(sep)[0: num_seps]): file
         for file in files
     }
-
+    print("get names dict: {}".format(dict_basename_to_file))
     return dict_basename_to_file
 
 
@@ -333,14 +326,14 @@ def parse_rm_duped_metrics_file(rmDup_file):
         return {
             "total_count": sum(df.total_count),
             "removed_count": sum(df.removed_count),
-            "Usable Reads": sum(df.total_count) - sum(df.removed_count)
+            "Usable reads": sum(df.total_count) - sum(df.removed_count)
         }
     except Exception as e:
         print(e)
         return {
             "total_count": None,
             "removed_count": None,
-            "Usable Reads": None
+            "Usable reads": None
         }
 
 
@@ -349,8 +342,8 @@ def build_second_mapped_from_master(df):
         '% of reads unmapped: too short',
         '% of reads mapped to too many loci',
         '% of reads unmapped: too many mismatches',
-        'Uniquely mapped reads %',
-        'Percent Usable / Mapped'
+        'STAR genome uniquely mapped %',
+        'Percent usable / mapped'
     ]].fillna('0')
     for col in second_mapped.columns:
         try:
@@ -364,7 +357,7 @@ def build_second_mapped_from_master(df):
 
 def build_peak_df_from_master(df):
     peaks = df[[
-        'Num Peaks',
+        'Clipper peaks num',
     ]]
 
     return peaks
@@ -372,9 +365,9 @@ def build_peak_df_from_master(df):
 
 def build_raw_number_from_master(df):
     num = df[[
-        'Usable Reads',
-        'Reads Passing Quality Filter',
-        'Uniquely Mapped Reads',
+        'Usable reads',
+        'STAR genome input reads',
+        'STAR genome uniquely mapped',
         'Repetitive Reads'
     ]]
     return num

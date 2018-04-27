@@ -1,21 +1,20 @@
 # QC summary parser
 
-### Items Parsed for RNA-SEQ
+This script is designed to run after the completion of an eCLIP pipeline run.
+It will search an analysis folder for metrics and summary files, and
+combine all into a single comma-separated file for easier parsing.
 
-- *.NRF.metrics <i>unused</i> : NRF
-- *.fqTr.metrics : first cutadapt trim
-- *.REPELEMENT.metrics : repetitive mapped elements file <i>coming soon</i>
-- *.fqTr\*U-SoMa.metrics : STAR map log (2nd mapping)
+Usage:
 
-### Items parsed for eCLIP
-- *.fqTrTr.metrics : second cutadapt trim
-- *.fqTrTrU-SoMaSoCo.metrics : UMI-duplicate removed metrics
-- *.fqTrTrU-SoMaSoCoSoV2Cl.bed.log <i>unused</i>
-- *.fqTrTrU-SoMaSoCoSoMeV2Cl.bed : clipper peaks file
-- *.fqTrTrU-SoMaSoCoSoMeV2ClNoCoFc1Pv1.204_01.metrics <i> would be useful to have at some point </i>
+```
+qcsummary_eclip.py \
+--analysis_dir results/   # folder containing all eCLIP pipeline intermediates \
+--output_csv qcsummary.csv  # output filename \
+--number_usable 1500000   # number of usable reads (typically ~1.5M)\
+--percent_usable 0.5   # percent of PCR-deduped / total mapped reads \
+--peak_threshold 1000  #
+```
 
-# TODO:
-1. add repetitive element stats (ie. number/percentage of reads mapping to rRNA)
-   - use: data/old/PKM2_IN_R1_M_S17_L001_R1_001.unassigned.adapterTrim.round2.rmRep.metrics
-2. look into adding the input-normalized peak counts to the metrics file
-3. the "204_01" is being added to input normalized peaks, is this an artifact/hardcoded somewhere?
+### VERY GENERAL GUIDELINES
+For human (hg19) datasets, first-pass QC requires 1.5M reads and 1000 peaks.
+This is dependent on the RBP binding behavior 

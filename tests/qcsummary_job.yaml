@@ -1,0 +1,8 @@
+#!/usr/bin/env qcsummary_eclip.cwl
+
+analysis_dir:
+  class: Directory
+  location: inputs/
+number_usable: 1500000
+percent_usable: 0.5
+peak_threshold: 1000
