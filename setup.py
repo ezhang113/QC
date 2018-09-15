@@ -14,6 +14,7 @@ setup(
     author_email='bay001@ucsd.edu',
     description='Gathers metrics files from eCLIP pipelines and produces a tabbed QC file.',
     packages=['qc'],
+    include_package_data=True,
     package_dir={
         'qc': 'qc',
     },

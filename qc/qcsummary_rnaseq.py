@@ -12,8 +12,8 @@ import os
 
 import pandas as pd
 
-from parse_cutadapt import parse_cutadapt_file
-
+# from parse_cutadapt import parse_cutadapt_file
+from qc import parse_cutadapt as pc
 
 ###############################################################################
 def get_names(files, num_seps, sep):
@@ -108,7 +108,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
         {name: parse_nrf_file(nrf_file)
          for name, nrf_file in nrf_names.items()}).transpose()
     cutadapt_df = pd.DataFrame(
-        {name: parse_cutadapt_file(cutadapt_file, paired_end)
+        {name: pc.parse_cutadapt_file(cutadapt_file, paired_end)
          for name, cutadapt_file in cutadapt_names.items()}).transpose()
     cutadapt_df.to_csv('/home/bay001/cutadapt1.tsv', sep='\t')
     rmrep_df = pd.DataFrame(

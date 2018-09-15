@@ -27,8 +27,10 @@ import pandas as pd
 import pybedtools
 import pysam
 
-from parse_cutadapt import parse_cutadapt_file
-from qcsummary_rnaseq import rnaseq_metrics_df, parse_star_file
+# from parse_cutadapt import parse_cutadapt_file
+# from qcsummary_rnaseq import rnaseq_metrics_df, parse_star_file
+from qc import parse_cutadapt as pc
+from qc import qcsummary_rnaseq as rq
 
 import matplotlib
 
@@ -247,7 +249,7 @@ def clipseq_metrics_df(
     if len(cutadapt_round2_names) > 0:
         cutadapt_round2_df = pd.DataFrame(
             {
-                name: parse_cutadapt_file(cutadapt_file, paired_end)
+                name: pc.parse_cutadapt_file(cutadapt_file, paired_end)
                 for name, cutadapt_file in cutadapt_round2_names.items()
             }
         ).transpose()
@@ -280,7 +282,7 @@ def clipseq_metrics_df(
     ###########################################################################
     # get rnaseq metrics dataframe
     ##############################
-    combined_df = rnaseq_metrics_df(analysis_dir, num_seps, sep, paired_end)
+    combined_df = rq.rnaseq_metrics_df(analysis_dir, num_seps, sep, paired_end)
     ###########################################################################
 
     ###########################################################################
