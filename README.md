@@ -7,14 +7,16 @@ combine all into a single comma-separated file for easier parsing.
 Usage:
 
 ```
-qcsummary_eclip.py \
+
+eclip_qc \
 --analysis_dir results/   # folder containing all eCLIP pipeline intermediates \
 --output_csv qcsummary.csv  # output filename \
 --number_usable 1500000   # number of usable reads (typically ~1.5M)\
 --percent_usable 0.5   # percent of PCR-deduped / total mapped reads \
 --peak_threshold 1000  #
+--paired_end # if this is paired-end data, use this. Otherwise for single-end, don't use this flag.
 ```
 
 ### VERY GENERAL GUIDELINES
 For human (hg19) datasets, first-pass QC requires 1.5M reads and 1000 peaks.
-This is dependent on the RBP binding behavior 
+This is dependent on the RBP binding behavior

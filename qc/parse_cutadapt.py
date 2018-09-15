@@ -18,17 +18,19 @@ import argparse
 
 
 ###############################################################################
-def parse_cutadapt_file(report):
+def parse_cutadapt_file(report, paired_end):
     #############################
     #print("parse_cutadapt_file report:", report)
     if os.path.getsize(report) == 0:
         return
     old_cutadapt = get_cutadapt_version(report) <= 8
-    if old_cutadapt:
-        return parse_old_cutadapt_file(report)
+    if paired_end:
+        if old_cutadapt:
+            return parse_old_cutadapt_file_pe(report)
+        else:
+            return parse_new_cutadapt_file(report)
     else:
         return parse_new_cutadapt_file(report)
-
 
 ###############################################################################
 def get_cutadapt_version(report):
@@ -39,11 +41,12 @@ def get_cutadapt_version(report):
         version = version.split()[-4]
     except:
         1
+
     return int(version.split(".")[1])
 
 
 ###############################################################################
-def parse_old_cutadapt_file(report):
+def parse_old_cutadapt_file_pe(report):
     ################################
     report_dir = {}
     try:
@@ -75,6 +78,7 @@ def parse_old_cutadapt_file(report):
 
 
 ###############################################################################
+
 def parse_new_cutadapt_file(report):
     ################################
     report_dict = {}
@@ -92,7 +96,6 @@ def parse_new_cutadapt_file(report):
             too_short = get_number_and_percent(file_handle.next())
             written = get_number_and_percent(file_handle.next())
             file_handle.next()
-
             bp_processed = get_number(strip_bp(file_handle.next()))
             if paired_file:
                 r1_bp_processed = get_number(strip_bp(file_handle.next()))
@@ -109,7 +112,7 @@ def parse_new_cutadapt_file(report):
                 r2_bp_written = get_number(strip_bp(file_handle.next()))
 
     except Exception as e:
-        print(e)
+        print("exception occurred in cutadapt parsing: {}".format(e))
         print(report)
         return report_dict
 
@@ -139,7 +142,6 @@ def parse_new_cutadapt_file(report):
     report_dict['Trimmed bases percent'] = bp_quality_trimmed[2]
     report_dict[bp_written[0]] = bp_written[1]
     report_dict["{} percent".format(bp_written[0])] = bp_written[2]
-
     return report_dict
 
 
@@ -155,6 +157,7 @@ def get_number_and_percent(line):
     :return line: list
     """
     line = [x.strip() for x in line.strip().split(":")]
+
     line = [line[0]] + line[1].split()
     line[2] = float(line[2][1:-2])
     line[1] = int(line[1].replace(",", ""))
@@ -180,15 +183,10 @@ def strip_bp(line):
 
 def remove_header(file_handle):
     """ for both SE and PE output removes header unifromly from cutadapt metrics file"""
-    file_handle.next()
-    file_handle.next()
-    file_handle.next()
-    file_handle.next()
-    file_handle.next()
-    file_handle.next()
-    file_handle.next()
-    file_handle.next()
-    #print foo.next()
+    while not file_handle.next().startswith('=== Summary ==='):  # skip all lines up until it hits this Summary line
+        continue
+    file_handle.next()  # blank line after === Summary === line
+
 ###############################################################################
 
 
