@@ -110,7 +110,6 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
     cutadapt_df = pd.DataFrame(
         {name: pc.parse_cutadapt_file(cutadapt_file, paired_end)
          for name, cutadapt_file in cutadapt_names.items()}).transpose()
-    cutadapt_df.to_csv('/home/bay001/cutadapt1.tsv', sep='\t')
     rmrep_df = pd.DataFrame(
         {name: parse_rmrep_file(rmrep_file)
          for name, rmrep_file in rmrep_names.items()}).transpose()
