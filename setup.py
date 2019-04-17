@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='qc',
-    version='0.0.2',
+    version='0.0.5',
     url='github.com/byee4/QC',
     license='',
     author='gpratt, byee4',
@@ -20,6 +20,7 @@ setup(
     },
     entry_points = {
         'console_scripts': [
+            'eclipqc = qc.qcsummary_eclip:main',
             'eclip_qc = qc.qcsummary_eclip:main',
             'rnaseq_qc = qc.qcsummary_rnaseq:main',
         ]

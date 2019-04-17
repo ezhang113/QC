@@ -233,7 +233,7 @@ def clipseq_metrics_df(
     if paired_end:
         rm_dup_suffix = "*.outSo.rmDup.metrics"
     else:
-        rm_dup_suffix = "*.outSo.rmDupSo.bam"
+        rm_dup_suffix = "*.genome-mappedSoSo.rmDupSo.bam"
 
     cutadapt_round2_names, rm_duped_names, peaks_names = get_all_names(
         analysis_dir=analysis_dir,

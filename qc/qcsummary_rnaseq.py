@@ -59,7 +59,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
     if paired_end:
         cutadapt_suffix = "*.fqTr.metrics"
     else:
-        cutadapt_suffix = "*.r1Tr.metrics"
+        cutadapt_suffix = "*.r1.fqTr.metrics"
     cutadapt_files = glob.glob(os.path.join(
         analysis_dir, cutadapt_suffix))
     # print("cutadapt_files:", cutadapt_files)
@@ -77,7 +77,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
     print("star_files_1:", star_files_1)
 
     star_files_2 = glob.glob(os.path.join(
-        analysis_dir, "*STARUnmapped.out.sorted.STARLog.final.out"))
+        analysis_dir, "*.repeat-unmapped.sorted.STARLog.final.out"))
     print("star_files_2:", star_files_2)
 
     # hack for old data
@@ -255,3 +255,4 @@ def parse_star_file(star_file_name):
         star_dict["% of reads unmapped: too short"] = star_file.next().strip().split("|")[1].strip()
         star_dict["% of reads unmapped: other"] = star_file.next().strip().split("|")[1].strip()
     return star_dict
+
