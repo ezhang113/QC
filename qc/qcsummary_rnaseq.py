@@ -14,7 +14,7 @@ import pandas as pd
 
 # from parse_cutadapt import parse_cutadapt_file
 from qc import parse_cutadapt as pc
-
+# import parse_cutadapt as pc
 ###############################################################################
 def get_names(files, num_seps, sep):
 
@@ -74,11 +74,11 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
 
     star_files_1 = glob.glob(os.path.join(
         analysis_dir, "*Tr.sorted.STARLog.final.out"))
-    print("star_files_1:", star_files_1)
+    # print("star_files_1:", star_files_1)
 
     star_files_2 = glob.glob(os.path.join(
         analysis_dir, "*.repeat-unmapped.sorted.STARLog.final.out"))
-    print("star_files_2:", star_files_2)
+    # print("star_files_2:", star_files_2)
 
     # hack for old data
     # if len(star_files_2) == 0:
@@ -165,7 +165,7 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
         pass
     except KeyError as e:
         print(e)
-        print "cutadapt file maybe be broken, ignoring calculation"
+        print("cutadapt file maybe be broken, ignoring calculation")
         pass
 
 
@@ -199,8 +199,8 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
 def parse_nrf_file(nrf_file):
     with open(nrf_file) as nrf_file:
         try:
-            names = nrf_file.next().strip().split()
-            values = nrf_file.next().strip().split()
+            names = next(nrf_file).strip().split()
+            values = next(nrf_file).strip().split()
             return {name: float(value) for name, value in zip(names, values)}
         except:
             return {}
@@ -214,7 +214,7 @@ def parse_rmrep_file(rmrep_file):
             rmrep_file, header=None, sep=" ", index_col=0,
             names=["element", "repetitive_count"])
     except Exception as e:
-        print rmrep_file
+        print(rmrep_file)
         raise e
     return df.sum().to_dict()
 
@@ -223,36 +223,37 @@ def parse_rmrep_file(rmrep_file):
 def parse_star_file(star_file_name):
     with open(star_file_name) as star_file:
         star_dict = {}
-        star_dict["Started job on"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Started mapping on"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Finished on"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Mapping speed, Million of reads per hour"] = star_file.next().strip().split("|")[1].strip()
-        star_file.next()
-        star_dict["Number of input reads"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Average input read length"] = float(star_file.next().strip().split("|")[1].strip())
-        star_file.next()
-        star_dict["STAR genome uniquely mapped number"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["STAR genome uniquely mapped %"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Average mapped length"] = float(star_file.next().strip().split("|")[1].strip())
-        star_dict["Number of splices: Total"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Number of splices: Annotated (sjdb)"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Number of splices: GT/AG"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Number of splices: GC/AG"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Number of splices: AT/AC"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Number of splices: Non-canonical"] = int(star_file.next().strip().split("|")[1].strip())
-        star_dict["Mismatch rate per base, percent"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Deletion rate per base"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Deletion average length"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Insertion rate per base"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Insertion average length"] = star_file.next().strip().split("|")[1].strip()
-        star_file.next()
-        star_dict["Number of reads mapped to multiple loci"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["% of reads mapped to multiple loci"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["Number of reads mapped to too many loci"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["% of reads mapped to too many loci"] = star_file.next().strip().split("|")[1].strip()
-        star_file.next()
-        star_dict["% of reads unmapped: too many mismatches"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["% of reads unmapped: too short"] = star_file.next().strip().split("|")[1].strip()
-        star_dict["% of reads unmapped: other"] = star_file.next().strip().split("|")[1].strip()
+        star_dict["Started job on"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Started mapping on"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Finished on"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Mapping speed, Million of reads per hour"] = next(star_file).strip().split("|")[1].strip()
+        next(star_file)
+        star_dict["Number of input reads"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Average input read length"] = float(next(star_file).strip().split("|")[1].strip())
+        next(star_file)
+        star_dict["STAR genome uniquely mapped number"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["STAR genome uniquely mapped %"] = float(next(star_file).strip().split("|")[1].strip()[:-1])
+        star_dict["Average mapped length"] = float(next(star_file).strip().split("|")[1].strip())
+        star_dict["Number of splices: Total"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Number of splices: Annotated (sjdb)"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Number of splices: GT/AG"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Number of splices: GC/AG"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Number of splices: AT/AC"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Number of splices: Non-canonical"] = int(next(star_file).strip().split("|")[1].strip())
+        star_dict["Mismatch rate per base, percent"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Deletion rate per base"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Deletion average length"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Insertion rate per base"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Insertion average length"] = next(star_file).strip().split("|")[1].strip()
+        next(star_file)
+        star_dict["Number of reads mapped to multiple loci"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["% of reads mapped to multiple loci"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["Number of reads mapped to too many loci"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["% of reads mapped to too many loci"] = next(star_file).strip().split("|")[1].strip()
+        next(star_file)
+        star_dict["% of reads unmapped: too many mismatches"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["% of reads unmapped: too short"] = next(star_file).strip().split("|")[1].strip()
+        star_dict["% of reads unmapped: other"] = next(star_file).strip().split("|")[1].strip()
+        
     return star_dict
 

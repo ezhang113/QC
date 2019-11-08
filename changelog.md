@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+
+## [0.1.0] - 2019-11-07
+### added
+- added excel file output
+- added input normalized peak numbers
+
+### removed
+- removed iCLIP support (who uses iCLIP here?)
+
 ## [0.0.5] - 2019-04-17
 ### Changed
 - changed the file prefixes to match the new eCLIP 0.3.0+ filename structure.

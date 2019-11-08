@@ -36,7 +36,7 @@ def parse_cutadapt_file(report, paired_end):
 def get_cutadapt_version(report):
     ##############################
     with open(report) as file_handle:
-            version = file_handle.next()
+            version = next(file_handle)
     try:
         version = version.split()[-4]
     except:
@@ -51,19 +51,19 @@ def parse_old_cutadapt_file_pe(report):
     report_dir = {}
     try:
         with open(report) as report:
-            report.next() #header
-            report.next() #paramaters
-            report.next() #max error rate
-            report.next() #adapters (known already)
-            processed_reads = [x.strip() for x in report.next().strip().split(":")]
-            processed_bases = [x.strip() for x in report.next().strip().split(":")]
-            trimmed_reads   = [x.strip() for x in report.next().strip().split(":")]
-            quality_trimmed = [x.strip() for x in report.next().strip().split(":")]
-            trimmed_bases   = [x.strip() for x in report.next().strip().split(":")]
-            too_short_reads = [x.strip() for x in report.next().strip().split(":")]
-            too_long_reads  = [x.strip() for x in report.next().strip().split(":")]
-            total_time      = [x.strip() for x in report.next().strip().split(":")]
-            time_pre_read   = [x.strip() for x in report.next().strip().split(":")]
+            next(report) #header
+            next(report) #paramaters
+            next(report) #max error rate
+            next(report) #adapters (known already)
+            processed_reads = [x.strip() for x in next(report).strip().split(":")]
+            processed_bases = [x.strip() for x in next(report).strip().split(":")]
+            trimmed_reads   = [x.strip() for x in next(report).strip().split(":")]
+            quality_trimmed = [x.strip() for x in next(report).strip().split(":")]
+            trimmed_bases   = [x.strip() for x in next(report).strip().split(":")]
+            too_short_reads = [x.strip() for x in next(report).strip().split(":")]
+            too_long_reads  = [x.strip() for x in next(report).strip().split(":")]
+            total_time      = [x.strip() for x in next(report).strip().split(":")]
+            time_pre_read   = [x.strip() for x in next(report).strip().split(":")]
             report_dir[processed_reads[0]] = int(processed_reads[1])
             report_dir[processed_bases[0]] = int(processed_bases[1].split()[0])
             report_dir[trimmed_reads[0]] = int(trimmed_reads[1].split()[0])
@@ -85,31 +85,31 @@ def parse_new_cutadapt_file(report):
     try:
         with open(report) as file_handle:
             remove_header(file_handle)
-            processed_reads = get_number(file_handle.next())
+            processed_reads = get_number(next(file_handle))
             paired_file = processed_reads[0] == 'Total read pairs processed'
             if paired_file:
-                r1_adapter = get_number_and_percent(file_handle.next())
-                r2_adapter = get_number_and_percent(file_handle.next())
+                r1_adapter = get_number_and_percent(next(file_handle))
+                r2_adapter = get_number_and_percent(next(file_handle))
             else:
-                adapter = get_number_and_percent(file_handle.next())
+                adapter = get_number_and_percent(next(file_handle))
 
-            too_short = get_number_and_percent(file_handle.next())
-            written = get_number_and_percent(file_handle.next())
-            file_handle.next()
-            bp_processed = get_number(strip_bp(file_handle.next()))
+            too_short = get_number_and_percent(next(file_handle))
+            written = get_number_and_percent(next(file_handle))
+            next(file_handle)
+            bp_processed = get_number(strip_bp(next(file_handle)))
             if paired_file:
-                r1_bp_processed = get_number(strip_bp(file_handle.next()))
-                r2_bp_processed = get_number(strip_bp(file_handle.next()))
+                r1_bp_processed = get_number(strip_bp(next(file_handle)))
+                r2_bp_processed = get_number(strip_bp(next(file_handle)))
 
-            bp_quality_trimmed = get_number_and_percent(strip_bp(file_handle.next()))
+            bp_quality_trimmed = get_number_and_percent(strip_bp(next(file_handle)))
             if paired_file:
-                r1_bp_trimmed = get_number(strip_bp(file_handle.next()))
-                r2_bp_trimmed = get_number(strip_bp(file_handle.next()))
+                r1_bp_trimmed = get_number(strip_bp(next(file_handle)))
+                r2_bp_trimmed = get_number(strip_bp(next(file_handle)))
 
-            bp_written = get_number_and_percent(strip_bp(file_handle.next()))
+            bp_written = get_number_and_percent(strip_bp(next(file_handle)))
             if paired_file:
-                r1_bp_written = get_number(strip_bp(file_handle.next()))
-                r2_bp_written = get_number(strip_bp(file_handle.next()))
+                r1_bp_written = get_number(strip_bp(next(file_handle)))
+                r2_bp_written = get_number(strip_bp(next(file_handle)))
 
     except Exception as e:
         print("exception occurred in cutadapt parsing: {}".format(e))
@@ -183,9 +183,9 @@ def strip_bp(line):
 
 def remove_header(file_handle):
     """ for both SE and PE output removes header unifromly from cutadapt metrics file"""
-    while not file_handle.next().startswith('=== Summary ==='):  # skip all lines up until it hits this Summary line
+    while not next(file_handle).startswith('=== Summary ==='):  # skip all lines up until it hits this Summary line
         continue
-    file_handle.next()  # blank line after === Summary === line
+    next(file_handle)  # blank line after === Summary === line
 
 ###############################################################################
 
