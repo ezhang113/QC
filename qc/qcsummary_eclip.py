@@ -53,6 +53,7 @@ def write_clipseq_metrics_excel(df, output_excel, percent_usable, number_usable,
     """
     Writes an excel file
     """
+
     
     # Create a Pandas Excel writer using XlsxWriter as the engine.
     output_excel_annotated = os.path.splitext(output_excel)[0] + ".annotated.xlsx"
@@ -72,7 +73,21 @@ def write_clipseq_metrics_excel(df, output_excel, percent_usable, number_usable,
             usable_input_ratio = 'BB'
             clipper_peaks = 'AZ'
             peak_num = 'BC'
-            
+        elif df.shape[1] == 72:
+            initial_reads_num = 'C'
+            adapter_round2_reads = 'AC'
+            repetitive_reads = 'AQ'
+            repetitive_perc = 'AP'
+            star_input_reads = 'AR'
+            star_uniquely_mapped = 'BN'
+            star_too_many_loci = 'BF'
+            star_too_short_perc = 'AJ'
+            usable_reads_col = 'BO'
+            unique_mapped_perc = 'BM'
+            usable_mapped_ratio = 'BS'
+            usable_input_ratio = 'BT'
+            clipper_peaks = 'BR'
+            peak_num = 'BU'
         elif df.shape[1] == 15:
             initial_reads_num = 'B'
             adapter_round2_reads = 'C'
@@ -89,7 +104,7 @@ def write_clipseq_metrics_excel(df, output_excel, percent_usable, number_usable,
             clipper_peaks = 'O'
             peak_num = 'P'
         else:
-            print("unknown number of columns (should be either 54 or 15): . col names: {}".format(df.shape[1], df.columns))
+            print("unknown number of columns (should be either 54 or 15 or ): . col names: {}".format(df.shape[1], df.columns))
             
         writer = pd.ExcelWriter(fn, engine='xlsxwriter')
 
@@ -308,7 +323,7 @@ def clipseq_metrics_df(
         num_seps = 3 if iclip else 3
 
     if paired_end:
-        rm_dup_suffix = "*.outSo.rmDup.metrics"
+        rm_dup_suffix = "*.genome-mappedSo.rmDup.metrics"
     else:
         rm_dup_suffix = "*.genome-mappedSoSo.rmDupSo.bam"
         # rm_dup_suffix = "*_per_umi.tsv"
@@ -507,9 +522,12 @@ def parse_rm_duped_metrics_file_pe(rmDup_file):
         dictionary containing sums of total, removed,
         and usable (total - removed)
     """
+    # print("returning number of reads mapped in rmduped file")
+    # return parse_rm_duped_metrics_file_se(rmDup_file)
     ########################################
+    ### TODO: FIX THIS ###
+    
     try:
-
         df = pd.read_csv(rmDup_file, sep="\t")
         return {
             "total_count": sum(df.total_count),
@@ -523,7 +541,8 @@ def parse_rm_duped_metrics_file_pe(rmDup_file):
             "removed_count": None,
             "Usable reads": None
         }
-
+    
+    
 def parse_rm_duped_metrics_file_se(rmDup_file):
     """
     Parses the BAM file to return the number of reads mapped.

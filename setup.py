@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='qc',
-    version='0.1.0',
+    version='0.1.1',
     url='github.com/byee4/QC',
     license='',
     author='gpratt, byee4',
