@@ -1,4 +1,0 @@
-,Initial reads num,Reads after cutadapt 2,Repetitive Reads,STAR genome input reads,STAR genome uniquely mapped,STAR genome uniquely mapped %,Number of reads mapped to too many loci,% of reads unmapped: too short,% of reads mapped to too many loci,Usable reads,Percent usable / mapped,Percent Usable / Input,Clipper peaks num
-Msi.HDMB03_Msi1_AIP_rep1.A01,39437.0,36175.0,1780.0,34395,1236.0,3.59%,297,94.39%,0.86%,597,0.4830097087378641,0.01513806831148414,33.0
-Msi.HDMB03_Msi1_AIP_rep1.B06,134846.0,128363.0,2118.0,126245,2149.0,1.70%,472,96.93%,0.37%,1339,0.6230805025593299,0.009929845898283968,
-Msi.HDMB03_Msi1_AI_rep1.NIL,6285235.0,6259467.0,3813700.0,2445767,630293.0,25.77%,729797,33.73%,29.84%,592538,0.9400992871569255,0.09427459752897067,

@@ -1,6 +1,0 @@
-analysis_dir:
-  class: Directory
-  location: ../data/kbp550/results/intermediates
-number_usable: 1000
-percent_usable: 0.5
-peak_threshold: 100

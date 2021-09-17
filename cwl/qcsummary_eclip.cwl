@@ -3,13 +3,15 @@
 cwlVersion: v1.0
 class: CommandLineTool
 
+requirements:
+  - class: InlineJavascriptRequirement
 
 baseCommand: [qcsummary_eclip.py]
 
 
 arguments: [
   --output_csv,
-  $(inputs.analysis_dir.)/eclipsummary.csv
+  $(inputs.analysis_dir.path)/eclipsummary.csv
   ]
 
 inputs:
@@ -38,14 +40,47 @@ inputs:
       position: 4
       prefix: --peak_threshold
 
+  output_csv:
+    default: ""
+    type: string
+    inputBinding:
+      position: 5
+      prefix: --output_csv
+      valueFrom: |
+        ${
+          if (inputs.output_csv == "") {
+            return "qcsummary.csv";
+          }
+          else {
+            return inputs.output_csv;
+          }
+        }
+
+
 outputs:
 
   summary_csv:
     type: File
     outputBinding:
-      glob: $(inputs.analysis_dir)/eclipsummary.csv
+      glob: |
+        ${
+          if (inputs.output_csv == "") {
+            return "qcsummary.csv";
+          }
+          else {
+            return inputs.output_csv;
+          }
+        }
 
   summary_figure:
     type: File
     outputBinding:
-      glob: $(inputs.analysis_dir)/eclipsummary.png
+      glob: |
+        ${
+          if (inputs.output_csv == "") {
+            return "qcsummary.png";
+          }
+          else {
+            return inputs.output_csv;
+          }
+        }

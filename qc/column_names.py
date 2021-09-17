@@ -124,8 +124,11 @@ Clipper peaks num
 Percent usable / mapped
 Percent Usable / Input""".split("\n")
 
+
+
 slim_qc_metrics = ["Initial reads num", "Reads after cutadapt 2", "Repetitive Reads", "Percent Repetitive", "STAR genome input reads",
                    "STAR genome uniquely mapped", "STAR genome uniquely mapped %",
                    'Number of reads mapped to too many loci',
                    '% of reads unmapped: too short', '% of reads mapped to too many loci', "Usable reads",
                    "Percent usable / mapped", "Percent Usable / Input", "Clipper peaks num"]
+

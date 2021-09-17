@@ -1,4 +1,4 @@
-#!/usr/bin/env qcsummary_eclip.cwl
+#!/usr/qc/env qcsummary_eclip.cwl
 
 analysis_dir:
   class: Directory

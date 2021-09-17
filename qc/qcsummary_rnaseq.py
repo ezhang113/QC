@@ -73,11 +73,11 @@ def rnaseq_metrics_df(analysis_dir, num_seps=1, sep=".", paired_end=False):
     # print("rmrep_files:", rmrep_files)
 
     star_files_1 = glob.glob(os.path.join(
-        analysis_dir, "*Tr.sorted.STARLog.final.out"))
+        analysis_dir, "*Tr.sorted.STARLog.final.out"))  # .primer.fq.sorted.STARLog.final.out for eclash
     # print("star_files_1:", star_files_1)
 
     star_files_2 = glob.glob(os.path.join(
-        analysis_dir, "*.repeat-unmapped.sorted.STARLog.final.out"))
+        analysis_dir, "*.repeat-unmapped.sorted.STARLog.final.out"))  # .repeat-unmapped.fq.sorted.STARLog.final.out for eclash
     # print("star_files_2:", star_files_2)
 
     # hack for old data
