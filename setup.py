@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='qc',
-    version='0.1.1',
+    version='0.2.0',
     url='github.com/byee4/QC',
     license='',
     author='gpratt, byee4',
@@ -23,6 +23,7 @@ setup(
             'eclipqc = qc.qcsummary_eclip:main',
             'eclip_qc = qc.qcsummary_eclip:main',
             'rnaseq_qc = qc.qcsummary_rnaseq:main',
+            'chimericqc = qc.qcsummary_chimeric:main',
         ]
     }
 )

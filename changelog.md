@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-1-04
+### Added
+- Implemented chimeric eclip qc (chimericqc)
+
 ## [0.1.1] - 2020-04-04
 ### Fixed
 - Fixed write_excel function for paired-end outputs
