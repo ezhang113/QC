@@ -557,7 +557,7 @@ def main():
             args.number_usable,
             cutadapt_round1_suffix="*fqTr.metrics",
             repeat_mapped_suffix="*.filtered.chimeric_candidates.STARLog.final.out",
-            repeat_mapped_eclip_suffix="*.filtered.chimeric_candidates.STARLog.final.out",
+            repeat_mapped_eclip_suffix="*.umi.r1.fqTrTr.fq.sorted.STARLog.final.out",
             genome_mapped_suffix="*.sorted.repeat-unmapped.STARLog.final.out",
             genome_mapped_eclip_suffix="*.eclip.repeat-unmapped.STARLog.final.out",
             rm_dup_suffix="*.fq.sorted.genome-mappedSoSo.rmDupSo.bam",
