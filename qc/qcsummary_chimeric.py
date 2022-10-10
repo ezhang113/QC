@@ -119,6 +119,10 @@ STAR genome uniquely mapped (Chimeric)
 STAR genome uniquely mapped % (Chimeric)
 STAR genome uniquely mapped (Non-chimeric)
 STAR genome uniquely mapped % (Non-chimeric)
+Repetitive Reads (Chimeric)
+Percent Repetitive (Chimeric)
+Repetitive Reads (Non-chimeric)
+Percent Repetitive (Non-chimeric)
 Usable reads (Chimeric)
 Percent Usable / Mapped (Chimeric)
 Percent Usable / Input (Chimeric)
@@ -136,19 +140,23 @@ clash_slim_qc_metrics = [
     "STAR genome input (Chimeric)",
     "STAR genome uniquely mapped (Chimeric)", 
     "STAR genome uniquely mapped % (Chimeric)",
-    "STAR repeat input (Non-chimeric)", 
-    "STAR repeat uniquely mapped (Non-chimeric)",
-    "STAR repeat mapped to multiple loci (Non-chimeric)", 
     'Genome (Chimeric) Number of reads mapped to too many loci',
     'Genome (Chimeric) % of reads unmapped: too short', 
     'Genome (Chimeric) % of reads mapped to too many loci', 
+    "STAR repeat input (Non-chimeric)", 
+    "STAR repeat uniquely mapped (Non-chimeric)",
+    "STAR repeat mapped to multiple loci (Non-chimeric)", 
     "STAR genome input (Non-chimeric)",
     "STAR genome uniquely mapped (Non-chimeric)", 
     "STAR genome uniquely mapped % (Non-chimeric)",
     'Genome (Non-chimeric) Number of reads mapped to too many loci',
     'Genome (Non-chimeric) % of reads unmapped: too short', 
     'Genome (Non-chimeric) % of reads mapped to too many loci', 
-    "Usable reads (Chimeric)",
+    'Repetitive Reads (Chimeric)',
+    'Percent Repetitive (Chimeric)',
+    'Repetitive Reads (Non-chimeric)',
+    'Percent Repetitive (Non-chimeric)',
+    'Usable reads (Chimeric)',
     "Percent Usable / Mapped (Chimeric)", 
     "Usable reads (Non-chimeric)",
     "Percent Usable / Mapped (Non-chimeric)", 
@@ -368,11 +376,12 @@ def clipseq_metrics_df(
     try:
         combined_df["Percent Usable / Mapped (Chimeric)"] = (combined_df['Usable reads (Chimeric)'] / combined_df['STAR genome uniquely mapped (Chimeric)'])
         combined_df["Percent Usable / Input (Chimeric)"] = (combined_df['Usable reads (Chimeric)'] / combined_df['Initial reads num'])
-        combined_df["Percent Usable / Mapped (Non-chimeric)"] = (combined_df['Usable reads (Non-chimeric)'] / combined_df['STAR genome uniquely mapped (Chimeric)'])
+        combined_df["Percent Usable / Mapped (Non-chimeric)"] = (combined_df['Usable reads (Non-chimeric)'] / combined_df['STAR genome uniquely mapped (Non-chimeric)'])
         combined_df["Percent Usable / Input (Non-chimeric)"] = (combined_df['Usable reads (Non-chimeric)'] / combined_df['Initial reads num'])
-        combined_df["Percent Repetitive"] = 1 - (combined_df['STAR genome input (Chimeric)'] / combined_df['STAR repeat input (Chimeric)'].astype(float))
-        combined_df["Repetitive Reads"] = combined_df['STAR repeat input (Chimeric)'] - combined_df['STAR genome input (Chimeric)']
-        
+        combined_df["Percent Repetitive (Chimeric)"] = 1 - (combined_df['STAR genome input (Chimeric)'] / combined_df['STAR repeat input (Chimeric)'].astype(float))
+        combined_df["Repetitive Reads (Chimeric)"] = combined_df['STAR repeat input (Chimeric)'] - combined_df['STAR genome input (Chimeric)']
+        combined_df["Percent Repetitive (Non-chimeric)"] = 1 - (combined_df['STAR genome input (Non-chimeric)'] / combined_df['STAR repeat input (Non-chimeric)'].astype(float))
+        combined_df["Repetitive Reads (Non-chimeric)"] = combined_df['STAR repeat input (Non-chimeric)'] - combined_df['STAR genome input (Non-chimeric)']
     except ZeroDivisionError:
         print("passing on ZeroDivisionError")
         pass
