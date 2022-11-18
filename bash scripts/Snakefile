@@ -35,3 +35,11 @@ rule blast:
         blastn -db {DB} -query {input.fasta} -out {output.blast_output} -outfml 6 -max_target_seqs 5 -num_threads {params.num_threads};
         """
 
+rule piechart:
+    input:
+        tsv=
+    output:
+        png=
+    #conda?
+    script:
+        "blastresults_piechart.py"
